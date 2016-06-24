@@ -42,9 +42,9 @@ int main(int argc, char* argv[]) {
   if (argc != 5) {
     height = 10;
     width = 10;
-    printf("Warning: %s No correct input was made. Used Standard of 10 x 10", prog_name);
+    printf("Warning: %s Not like this. 10x10 it is.", prog_name);
     clear_eol();
-    printf("Please open like './gridserver -x 10 -y 10'");
+    printf("Like this: './gridserver -x 10 -y 10'");
     clear_eol();
       
   } else {
@@ -66,7 +66,7 @@ int main(int argc, char* argv[]) {
   }
     
   if (width <= 0 || height <= 0) {
-    fprintf(stderr, "Error %s: Use positive dimensions.",
+    fprintf(stderr, "Error %s: No, wtf...",
             prog_name);
     cleanup();
     return EXIT_FAILURE;

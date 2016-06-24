@@ -11,8 +11,8 @@
 
 
 
-#define KEY 1234 // original 4224
-#define PIPE_DISPLAY "fourtytwo"
+#define KEY 1234
+#define PIPE_DISPLAY "asdfwer"
 #define PERM 0660
 #define SERVER 42L
 #define REG_DOUBLE -2
@@ -27,17 +27,17 @@ void clear_eol() {
 
 
 typedef struct {
-  long msg_to;
-  long msg_from;
-  char client_id;
+  long msgRecip;
+  long msgSender;
+  char clientId;
   char command;
 } navigation;
 
 
 typedef struct {
-  long msg_to;
-  long msg_from;
-  char client_id;
+  long msgRecip;
+  long msgSender;
+  char clientId;
   int x;
   int y;
   int status;

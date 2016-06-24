@@ -9,15 +9,15 @@ char* prog_name = NULL;
 char client_id = 0;
 int msgid = -1;
 
-void handle_sigint(int sig);
-void handle_sigterm(int sig);
+void sigIntHandler(int sig);
+void sigTermHandler(int sig);
 void cleanup();
-char* dirIDtoStr(char id);
+char* dirToStr(char id);
 
 int main(int argc, char const* argv[]) {
     
-  (void)signal(SIGINT, handle_sigint);
-  (void)signal(SIGTERM, handle_sigterm);
+  (void)signal(SIGINT, sigIntHandler);
+  (void)signal(SIGTERM, sigTermHandler);
     
   char command = '0';
   long my_pid = (long)getpid();
@@ -29,7 +29,7 @@ int main(int argc, char const* argv[]) {
 
     // invalid # of arguments
   if (argc != 2) {
-    fprintf(stderr, "Usage: %s <ID CHAR>", prog_name);
+    fprintf(stderr, "Usage: %s A-Z", prog_name);
     clear_eol();
     cleanup();
     return EXIT_FAILURE;
@@ -40,22 +40,22 @@ int main(int argc, char const* argv[]) {
     // not a letter
   if (!isalpha(client_id)) {
       
-    fprintf(stderr, "Error: %s You have to use a letter as ID", prog_name);
+    fprintf(stderr, "Error: %s No. Don't.", prog_name);
     clear_eol();
     cleanup();
     return EXIT_FAILURE;
   }
     
-  msg.msg_to = SERVER;
-  msg.msg_from = my_pid;
+  msg.msgRecip = SERVER;
+  msg.msgSender = my_pid;
     
-  msg.client_id = client_id;
+  msg.clientId = client_id;
   msg.command = 'i';
     
   msgid = msgget(KEY, PERM);
     
   if (msgid == -1) {
-    fprintf(stderr, "Error %s: Can't access message queue", prog_name);
+    fprintf(stderr, "Error %s: Message Queue ded.", prog_name);
     clear_eol();
     cleanup();
     return EXIT_FAILURE;
@@ -63,13 +63,13 @@ int main(int argc, char const* argv[]) {
     
   if (msgsnd(msgid, &msg, sizeof(msg), 0) == -1) {
       
-    fprintf(stderr, "Error %s: Can't send discovery message", prog_name);
+    fprintf(stderr, "Error %s: Initializing failed", prog_name);
     return EXIT_FAILURE;
   }
     
   if (msgrcv(msgid, &init_pos, sizeof(init_pos), my_pid, 0) == -1) {
       
-    fprintf(stderr, "Error %s: Can't receive initial position from message queue",
+    fprintf(stderr, "Error %s: No initial position.",
             prog_name);
     clear_eol();
     cleanup();
@@ -77,15 +77,12 @@ int main(int argc, char const* argv[]) {
   }
     
   if (init_pos.status == REG_FULL) {
-    fprintf(stderr, "Error %s: The grid is full.", prog_name);
+    fprintf(stderr, "Error %s: Grid full.", prog_name);
     clear_eol();
     cleanup();
     return EXIT_FAILURE;
-  }
-    
-  else if (init_pos.status == REG_DOUBLE) {
-      
-    fprintf(stderr, "%s: The ID %c is allready in use.", prog_name, client_id);
+  } else if (init_pos.status == REG_DOUBLE) {
+    fprintf(stderr, "%s: The ID %c already exists", prog_name, client_id);
     clear_eol();
     cleanup();
     return EXIT_FAILURE;
@@ -98,32 +95,26 @@ int main(int argc, char const* argv[]) {
     
   while (true) {
 
-    printf(" Commands:\n");
-    printf("- N North\n");
-    printf("- E East\n");
-    printf("- S South\n");
-    printf("- W West\n");
-    printf("- T Terminate\n");
-
+    printf(" Commands: N/E/S/W, T (Terminate) \n");
       
     scanf(" %c", &command);
     command = toupper(command);
+    
     if (command == 'N' || command == 'E' || command == 'S' || command == 'W' || command == 'T') {
-        
       msg.command = command;
         
       if (msgsnd(msgid, &msg, sizeof(msg), 0) == -1) {
-        fprintf(stderr, "Error %s: Can't send command", prog_name);
+        fprintf(stderr, "Error %s: command not sent", prog_name);
         clear_eol();
         cleanup();
         return EXIT_FAILURE;
       }
         
       if (command != 'T') {
-          printf("%c navigated %s\n", msg.client_id, dirIDtoStr(msg.command));
+          printf("%c navigated %s\n", msg.clientId, dirToStr(msg.command));
       }
     } else {
-      printf("Command not found.\n");
+      printf("No such command.\n");
     }
   }
   cleanup();
@@ -133,29 +124,27 @@ int main(int argc, char const* argv[]) {
 
 void cleanup() {
   clear_eol();
-  printf("Info %s: Exiting...", prog_name);
-  clear_eol();
-  printf("Info %s: Freeing memory", prog_name);
+  printf("Info %s: Dying...", prog_name);
   clear_eol();
   free(prog_name);
 }
 
-void handle_sigint(int sig) {
+void sigIntHandler(int sig) {
   printf("\nInfo %s: SIGINT received", prog_name);
   clear_eol();
     
   if (msgid != -1) {
       
-    printf("Info %s: Sending terminate command to server", prog_name);
+    printf("Info %s: Server ded", prog_name);
     clear_eol();
     navigation msg;
-    msg.msg_to = SERVER;
-    msg.msg_from = (long)getpid();
-    msg.client_id = client_id;
+    msg.msgRecip = SERVER;
+    msg.msgSender = (long)getpid();
+    msg.clientId = client_id;
     msg.command = 'T';
       
     if (msgsnd(msgid, &msg, sizeof(msg), 0) == -1) {
-      fprintf(stderr, "Error %s: Can't send command", prog_name);
+      fprintf(stderr, "Error %s: command not sent", prog_name);
       clear_eol();
       exit(EXIT_FAILURE);
     }
@@ -166,17 +155,17 @@ void handle_sigint(int sig) {
 }
 
 
-void handle_sigterm(int sig) {
+void sigTermHandler(int sig) {
   printf("\nInfo %s: SIGTERM received", prog_name);
   clear_eol();
-  printf("Info %s: Vehicle %c has been eliminated.", prog_name, client_id);
+  printf("Info %s: %c ded.", prog_name, client_id);
   clear_eol();
   cleanup();
   exit(sig);
 }
 
 
-char* dirIDtoStr(char id) {
+char* dirToStr(char id) {
   switch (id) {
     case 'N':
       return "north";

@@ -41,7 +41,7 @@ int main(int argc, char* argv[]) {
     
   display = open(PIPE_DISPLAY, O_RDONLY);
   if (display == -1) {
-    fprintf(stderr, "Error %s: Can't open fifo. Is the gridserver running?", prog_name);
+    fprintf(stderr, "Error %s: Gridserver not running?", prog_name);
     clear_eol();
     cleanup();
     return EXIT_FAILURE;
@@ -69,13 +69,9 @@ int main(int argc, char* argv[]) {
 
 void cleanup() {
   clear_eol();
-  printf("Info %s: Exiting...", prog_name);
-  clear_eol();
-  printf("Info %s: Closing the fifo", prog_name);
+  printf("Info %s: Dying...", prog_name);
   clear_eol();
   close(display);
-  printf("Info %s: Freeing memory", prog_name);
-  clear_eol();
   free(prog_name);
 }
 
