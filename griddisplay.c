@@ -4,7 +4,6 @@
 #include <unistd.h>
 #include <sys/select.h>
 #include "headerstuff.h"
-#include "rlutil.h"
 
 
 char* prog_name = NULL;
@@ -33,10 +32,9 @@ int main(int argc, char* argv[]) {
         return EXIT_SUCCESS;
         break;
       default:
-        fprintf(stderr, "Error: %s No correct input was made.", argv[0]);
+        fprintf(stderr, "Error: %s Well that went wrong... Please restart the Display.", argv[0]);
         clear_eol();
         cleanup();
-        resetColor();
         return EXIT_FAILURE;
     }
   }
@@ -46,10 +44,9 @@ int main(int argc, char* argv[]) {
     fprintf(stderr, "Error %s: Can't open fifo. Is the gridserver running?", prog_name);
     clear_eol();
     cleanup();
-    resetColor();
     return EXIT_FAILURE;
   }
-  printf("\nWelcome!\n");
+  printf("\n GRIDDISPLAY !\n");
     
     
   while (1) {
@@ -62,7 +59,6 @@ int main(int argc, char* argv[]) {
       fprintf(stderr, "Error %s: Can't read from the fifo", prog_name);
       clear_eol();
       cleanup();
-      resetColor();
       return EXIT_FAILURE;
     }
   }

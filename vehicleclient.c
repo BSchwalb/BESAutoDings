@@ -3,7 +3,6 @@
 #include <signal.h>
 #include <string.h>
 #include <ctype.h>
-#include "rlutil.h"
 #include "headerstuff.h"
 
 char* prog_name = NULL;
@@ -33,7 +32,6 @@ int main(int argc, char const* argv[]) {
     fprintf(stderr, "Usage: %s <ID CHAR>", prog_name);
     clear_eol();
     cleanup();
-    resetColor();
     return EXIT_FAILURE;
   }
     
@@ -45,7 +43,6 @@ int main(int argc, char const* argv[]) {
     fprintf(stderr, "Error: %s You have to use a letter as ID", prog_name);
     clear_eol();
     cleanup();
-    resetColor();
     return EXIT_FAILURE;
   }
     
@@ -61,7 +58,6 @@ int main(int argc, char const* argv[]) {
     fprintf(stderr, "Error %s: Can't access message queue", prog_name);
     clear_eol();
     cleanup();
-    resetColor();
     return EXIT_FAILURE;
   }
     
@@ -77,7 +73,6 @@ int main(int argc, char const* argv[]) {
             prog_name);
     clear_eol();
     cleanup();
-    resetColor();
     return EXIT_FAILURE;
   }
     
@@ -85,7 +80,6 @@ int main(int argc, char const* argv[]) {
     fprintf(stderr, "Error %s: The grid is full.", prog_name);
     clear_eol();
     cleanup();
-    resetColor();
     return EXIT_FAILURE;
   }
     
@@ -94,7 +88,6 @@ int main(int argc, char const* argv[]) {
     fprintf(stderr, "%s: The ID %c is allready in use.", prog_name, client_id);
     clear_eol();
     cleanup();
-    resetColor();
     return EXIT_FAILURE;
   }
     
@@ -123,7 +116,6 @@ int main(int argc, char const* argv[]) {
         fprintf(stderr, "Error %s: Can't send command", prog_name);
         clear_eol();
         cleanup();
-        resetColor();
         return EXIT_FAILURE;
       }
         
@@ -132,7 +124,6 @@ int main(int argc, char const* argv[]) {
       }
     } else {
       printf("Command not found.\n");
-      resetColor();
     }
   }
   cleanup();
@@ -150,7 +141,6 @@ void cleanup() {
 }
 
 void handle_sigint(int sig) {
-  setBackgroundColor(BLUE);
   printf("\nInfo %s: SIGINT received", prog_name);
   clear_eol();
     
@@ -167,12 +157,10 @@ void handle_sigint(int sig) {
     if (msgsnd(msgid, &msg, sizeof(msg), 0) == -1) {
       fprintf(stderr, "Error %s: Can't send command", prog_name);
       clear_eol();
-      resetColor();
       exit(EXIT_FAILURE);
     }
   } else {
     cleanup();
-    resetColor();
     exit(sig);
   }
 }
@@ -184,7 +172,6 @@ void handle_sigterm(int sig) {
   printf("Info %s: Vehicle %c has been eliminated.", prog_name, client_id);
   clear_eol();
   cleanup();
-  resetColor();
   exit(sig);
 }
 

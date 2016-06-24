@@ -8,7 +8,6 @@
 #include <sys/ipc.h>
 #include <sys/msg.h>
 #include <sys/stat.h>
-#include "rlutil.h"
 
 
 
@@ -27,7 +26,7 @@ void clear_eol() {
 }
 
 
-typedef struct 
+typedef struct {
   long msg_to;
   long msg_from;
   char client_id;

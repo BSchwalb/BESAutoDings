@@ -42,9 +42,9 @@ int main(int argc, char* argv[]) {
   if (argc != 5) {
     height = 10;
     width = 10;
-    printf("Warning: %s No correct input was made. The grid size was chosen at 10 x 10", prog_name);
+    printf("Warning: %s No correct input was made. Used Standard of 10 x 10", prog_name);
     clear_eol();
-    printf("Correct inputlooks like this: './gridserver -x 10 -y 10'");
+    printf("Please open like './gridserver -x 10 -y 10'");
     clear_eol();
       
   } else {
@@ -59,15 +59,14 @@ int main(int argc, char* argv[]) {
           height = atoi(optarg);
           break;
         default:
-          fprintf(stderr, "Error: %s No correct input was made.", prog_name);
+          fprintf(stderr, "Error: %s No correct input.", prog_name);
           cleanup();
-          resetColor();
           return EXIT_FAILURE;
       }
   }
     
   if (width <= 0 || height <= 0) {
-    fprintf(stderr, "Error %s: No correct input was made. Use positive dimensions.",
+    fprintf(stderr, "Error %s: Use positive dimensions.",
             prog_name);
     cleanup();
     return EXIT_FAILURE;
@@ -91,7 +90,7 @@ int main(int argc, char* argv[]) {
   if (stat(PIPE_DISPLAY, &st) != 0) {
       
     if (mkfifo(PIPE_DISPLAY, PERM) == -1) {
-      fprintf(stderr, "Error %s: Can't create fifo.", prog_name);
+      fprintf(stderr, "Error %s: Can't create FIFO.", prog_name);
       clear_eol();
       cleanup();
       return EXIT_FAILURE;
@@ -102,7 +101,7 @@ int main(int argc, char* argv[]) {
     
   if (display == -1) {
       
-    fprintf(stderr, "Error %s: Can't open fifo.", prog_name);
+    fprintf(stderr, "Error %s: Can't open FIFO.", prog_name);
     clear_eol();
     cleanup();
     return EXIT_FAILURE;
@@ -110,25 +109,24 @@ int main(int argc, char* argv[]) {
     
   if ((msgid = msgget(KEY, PERM | IPC_CREAT | IPC_EXCL)) == -1) {
       
-    fprintf(stderr, "Error %s: Can't create message queue", prog_name);
+    fprintf(stderr, "Error %s: Can't create MQ.", prog_name);
     clear_eol();
     cleanup();
     return EXIT_FAILURE;
   }
     
-  printf("\nWelcome!\n");
-  resetColor();
+  printf("\n GRIDSERVER LAN!\n");
     
   while (1) {
     if (msgrcv(msgid, &msg, sizeof(msg), SERVER, 0) == -1) {
         
-      fprintf(stderr, "Error %s: Can't receive from message queue", prog_name);
+      fprintf(stderr, "Error %s: Can't receive from MQ", prog_name);
       clear_eol();
       cleanup();
       return EXIT_FAILURE;
     }
 
-    printf("Message received: Client ID: %c Client command: %c\n", msg.client_id, msg.command);
+    printf("MSG received: Client ID: %c cmd: %c\n", msg.client_id, msg.command);
     if (msg.command == 'i') {
       printf("New\n");
       position init_pos;
@@ -158,7 +156,7 @@ int main(int argc, char* argv[]) {
       }
 
         if (msgsnd(msgid, &init_pos, sizeof(init_pos), 0) == -1) {
-        fprintf(stderr, "Error %s: Can't send position back to client", prog_name);
+        fprintf(stderr, "Error %s: nota legita postione! *sounding italiano*... BAGUETTE", prog_name);
         clear_eol();
         cleanup();
         exit(EXIT_FAILURE);
@@ -168,7 +166,7 @@ int main(int argc, char* argv[]) {
       else if (on_board(msg.client_id, clients) && msg.command == 'T') {
       for (int i = 0; i < size; ++i) {
         if (grid[i] == msg.client_id) {
-          printf("%c was terminated by User\n", msg.client_id);
+          printf("%c is ded by signiori\n", msg.client_id);
           kill(clients[msg.client_id - 'A'], SIGTERM);
           clients[msg.client_id - 'A'] = 0;
           grid[i] = ' ';
@@ -177,11 +175,11 @@ int main(int argc, char* argv[]) {
     }
 
       else if (on_board(msg.client_id, clients)) {
-      printf("Already on grid\n");
+      printf("itsy bitsy griddy \n");
       if (move(msg.client_id, msg.command, grid, width, size) == 0) {
         for (int i = 0; i < size; ++i) {
           if (grid[i] == msg.client_id) {
-            printf("A crash occoured! %c and %c where destroyed!\n", grid[i],
+            printf("Women driving...! (jk...) %c and %c, U ded!\n", grid[i],
                    grid[i + dir_check(msg.command, width)]);
             kill(clients[grid[i] - 'A'], SIGTERM);
             clients[grid[i] - 'A'] = 0;
@@ -196,7 +194,7 @@ int main(int argc, char* argv[]) {
       } else if (move(msg.client_id, msg.command, grid, width, size) == 2) {
         for (int i = 0; i < size; ++i) {
           if (grid[i] == msg.client_id) {
-            printf("%c moved of board and was destroyed!\n", msg.client_id);
+            printf("%c You fell off of the world...!\n", msg.client_id);
             kill(clients[grid[i] - 'A'], SIGTERM);
             clients[grid[i] - 'A'] = 0;
             grid[i] = ' ';
@@ -208,7 +206,7 @@ int main(int argc, char* argv[]) {
       else if (move(msg.client_id, msg.command, grid, width, size) == 1) {
         for (int i = 0; i < size; ++i) {
           if (grid[i] == msg.client_id) {
-            printf("%c moved in the direction of %c \n", msg.client_id, msg.command);
+            printf("%c walky walky to %c \n", msg.client_id, msg.command);
             grid[i + dir_check(msg.command, width)] = msg.client_id;
             grid[i] = ' ';
             break;
@@ -218,7 +216,7 @@ int main(int argc, char* argv[]) {
     }
 
       
-    printf("-------------------------------\n");
+    printf("( . Y . )( . Y . )( . Y . )( . Y . )( . Y . )( . Y . )( . Y . )\n");
     output[0] = '\n';
     int size_count = 1;
     for (int y = 0; y < height + 2; ++y) {
@@ -232,10 +230,9 @@ int main(int argc, char* argv[]) {
     output[size_count] = '\n';
     output[size_count + 1] = '\0';
     if (write(display, output, strlen(output)) == -1) {
-      fprintf(stderr, "Error %s: Can't write to display\n", prog_name);
+      fprintf(stderr, "Error %s: Display seems to be chinese... \n", prog_name);
       clear_eol();
       cleanup();
-      resetColor();
       return EXIT_FAILURE;
     }
   }
@@ -246,25 +243,25 @@ int main(int argc, char* argv[]) {
 
 void cleanup() {
   clear_eol();
-  printf("Info %s: Exiting...", prog_name);
+  printf("Info %s: RELEASE THE GOKU...", prog_name);
   clear_eol();
   if (msgid != -1) {
-    printf("Info %s: Cleaning up the message queue...", prog_name);
+    printf("Info %s: MQ DED...", prog_name);
     clear_eol();
     msgctl(msgid, IPC_RMID, (struct msqid_ds*)0);
   }
-  printf("Info %s: Killing Clients...", prog_name);
+  printf("Info %s: Clients DED...", prog_name);
   clear_eol();
   for (int i = 0; i < 26; ++i) {
     if (clients[i] != 0) {
       kill(clients[i], SIGTERM);
     }
   }
-  printf("Info %s: Closing the fifo...", prog_name);
+  printf("Info %s: FIFO DED...", prog_name);
   clear_eol();
   close(display);
   remove(PIPE_DISPLAY);
-  printf("Info %s: Freeing memory...", prog_name);
+  printf("Info %s: Memory DED (well actually not ded, but you get the point)...", prog_name);
   clear_eol();
   free(grid);
   free(prog_name);
