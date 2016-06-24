@@ -14,19 +14,19 @@ long clients[26] = {};
 int display = -1;
 
 
-void sig_handler();
+void sigHandler();
 
 void cleanup();
-bool on_board(char id, long clients[]);
-int dir_check(char dir, int width);
+bool isOnBoard(char id, long clients[]);
+int dirCheck(char dir, int width);
 int move(char id, char dir, char grid[], int width, int size);
 
 int main(int argc, char* argv[]) {
     
-  (void)signal(SIGINT, sig_handler);
-  (void)signal(SIGQUIT, sig_handler);
-  (void)signal(SIGTERM, sig_handler);
-  (void)signal(SIGHUP, sig_handler);
+  (void)signal(SIGINT, sigHandler);
+  (void)signal(SIGQUIT, sigHandler);
+  (void)signal(SIGTERM, sigHandler);
+  (void)signal(SIGHUP, sigHandler);
     
   int size = 0;
   int height = 0;
@@ -66,8 +66,7 @@ int main(int argc, char* argv[]) {
   }
     
   if (width <= 0 || height <= 0) {
-    fprintf(stderr, "Error %s: No, wtf...",
-            prog_name);
+    fprintf(stderr, "Error %s: No, wtf...", prog_name);
     cleanup();
     return EXIT_FAILURE;
   }
@@ -87,20 +86,16 @@ int main(int argc, char* argv[]) {
   }
 
   struct stat st;
-  if (stat(PIPE_DISPLAY, &st) != 0) {
-      
-    if (mkfifo(PIPE_DISPLAY, PERM) == -1) {
+  if (stat(PIPE_DISPLAY, &st) != 0 && mkfifo(PIPE_DISPLAY, PERM) == -1) {
       fprintf(stderr, "Error %s: Can't create FIFO.", prog_name);
       clear_eol();
       cleanup();
       return EXIT_FAILURE;
-    }
   }
     
   display = open(PIPE_DISPLAY, O_RDWR);
     
   if (display == -1) {
-      
     fprintf(stderr, "Error %s: Can't open FIFO.", prog_name);
     clear_eol();
     cleanup();
@@ -136,7 +131,7 @@ int main(int argc, char* argv[]) {
       init_pos.x = 0;
       init_pos.y = 0;
 
-        init_pos.status = (on_board(msg.client_id, clients) ? REG_DOUBLE : 0);
+        init_pos.status = (isOnBoard(msg.client_id, clients) ? REG_DOUBLE : 0);
       if (init_pos.status != REG_DOUBLE) {
         for (int i = 0; i < size; ++i) {
           if (grid[i] == ' ') {
@@ -163,7 +158,7 @@ int main(int argc, char* argv[]) {
       }
     }
 
-      else if (on_board(msg.client_id, clients) && msg.command == 'T') {
+      else if (isOnBoard(msg.client_id, clients) && msg.command == 'T') {
       for (int i = 0; i < size; ++i) {
         if (grid[i] == msg.client_id) {
           printf("%c is ded by signiori\n", msg.client_id);
@@ -174,19 +169,19 @@ int main(int argc, char* argv[]) {
       }
     }
 
-      else if (on_board(msg.client_id, clients)) {
+      else if (isOnBoard(msg.client_id, clients)) {
       printf("itsy bitsy griddy \n");
       if (move(msg.client_id, msg.command, grid, width, size) == 0) {
         for (int i = 0; i < size; ++i) {
           if (grid[i] == msg.client_id) {
             printf("Women driving...! (jk...) %c and %c, U ded!\n", grid[i],
-                   grid[i + dir_check(msg.command, width)]);
+                   grid[i + dirCheck(msg.command, width)]);
             kill(clients[grid[i] - 'A'], SIGTERM);
             clients[grid[i] - 'A'] = 0;
-            kill(clients[grid[i + dir_check(msg.command, width)] - 'A'], SIGTERM);
-            clients[grid[i + dir_check(msg.command, width)] - 'A'] = 0;
+            kill(clients[grid[i + dirCheck(msg.command, width)] - 'A'], SIGTERM);
+            clients[grid[i + dirCheck(msg.command, width)] - 'A'] = 0;
             grid[i] = ' ';
-            grid[i + dir_check(msg.command, width)] = ' ';
+            grid[i + dirCheck(msg.command, width)] = ' ';
             break;
           }
         }
@@ -207,7 +202,7 @@ int main(int argc, char* argv[]) {
         for (int i = 0; i < size; ++i) {
           if (grid[i] == msg.client_id) {
             printf("%c walky walky to %c \n", msg.client_id, msg.command);
-            grid[i + dir_check(msg.command, width)] = msg.client_id;
+            grid[i + dirCheck(msg.command, width)] = msg.client_id;
             grid[i] = ' ';
             break;
           }
@@ -268,14 +263,14 @@ void cleanup() {
 }
 
 
-void sig_handler() {
+void sigHandler() {
   printf("\n");
   cleanup();
   exit(EXIT_SUCCESS);
 }
 
 
-bool on_board(char id, long clients[]) {
+bool isOnBboard(char id, long clients[]) {
   if (clients[id - 'A'] != 0) {
     return true;
   }
@@ -283,7 +278,7 @@ bool on_board(char id, long clients[]) {
 }
 
 
-int dir_check(char dir, int width) {
+int dirCheck(char dir, int width) {
   if (dir == 'N') {
     return (-(width + 2));
   } else if (dir == 'E') {
@@ -300,10 +295,10 @@ int dir_check(char dir, int width) {
 int move(char id, char dir, char grid[], int width, int size) {
   for (int i = 0; i < size; ++i) {
     if (grid[i] == id) {
-      if (grid[i + dir_check(dir, width)] == '#') {
+      if (grid[i + dirCheck(dir, width)] == '#') {
         return 2;
       }
-      if (grid[i + dir_check(dir, width)] == ' ') {
+      if (grid[i + dirCheck(dir, width)] == ' ') {
         return 1;
       } else {
         return 0;

@@ -11,34 +11,17 @@ int display = -1;
 
 
 void cleanup();
-void handle_sigint(int sig);
-void print_help();
-
+void sigIntHandler(int sig);
 
 
 int main(int argc, char* argv[]) {
-  (void)signal(SIGINT, handle_sigint);
+  (void)signal(SIGINT, sigIntHandler);
   char incoming[PIPE_BUF] = "";
   char c;
     
   prog_name = (char*)malloc((strlen(argv[0]) + 1) * sizeof(char));
   strcpy(prog_name, argv[0]);
-    
-  while ((c = getopt(argc, argv, "h")) != -1) {
-    switch (c) {
-      case 'h':
-        print_help(argv[0]);
-        cleanup();
-        return EXIT_SUCCESS;
-        break;
-      default:
-        fprintf(stderr, "Error: %s Well that went wrong... Please restart the Display.", argv[0]);
-        clear_eol();
-        cleanup();
-        return EXIT_FAILURE;
-    }
-  }
-    
+        
   display = open(PIPE_DISPLAY, O_RDONLY);
   if (display == -1) {
     fprintf(stderr, "Error %s: Gridserver not running?", prog_name);
@@ -76,18 +59,8 @@ void cleanup() {
 }
 
 
-void handle_sigint(int sig) {
+void sigIntHandler(int sig) {
   printf("\n");
   cleanup();
   exit(sig);
-}
-
-
-void print_help() {
-  printf("Usage %s:", prog_name);
-  clear_eol();
-  printf("1) Start the gridserver.");
-  clear_eol();
-  printf("2) Start the griddisplay.");
-  clear_eol();
 }
