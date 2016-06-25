@@ -4,6 +4,7 @@
 #include <sys/stat.h>
 #include <unistd.h>
 #include "headerstuff.h"
+#include <stdio.h>
 
 
 char* grid = NULL;
@@ -121,26 +122,26 @@ int main(int argc, char* argv[]) {
       return EXIT_FAILURE;
     }
 
-    printf("MSG received: Client ID: %c cmd: %c\n", msg.client_id, msg.command);
+    printf("MSG received: Client ID: %c cmd: %c\n", msg.clientId, msg.command);
     if (msg.command == 'i') {
       printf("New\n");
       position init_pos;
-      init_pos.msg_to = msg.msg_from;
-      init_pos.msg_from = SERVER;
-      init_pos.client_id = msg.client_id;
+      init_pos.msgRecip = msg.msgSender;
+      init_pos.msgSender = SERVER;
+      init_pos.clientId = msg.clientId;
       init_pos.x = 0;
       init_pos.y = 0;
 
-        init_pos.status = (isOnBoard(msg.client_id, clients) ? REG_DOUBLE : 0);
+        init_pos.status = (isOnBoard(msg.clientId, clients) ? REG_DOUBLE : 0);
       if (init_pos.status != REG_DOUBLE) {
         for (int i = 0; i < size; ++i) {
           if (grid[i] == ' ') {
-            grid[i] = msg.client_id;
-            clients[msg.client_id - 'A'] = (long)msg.msg_from;
+            grid[i] = msg.clientId;
+            clients[msg.clientId - 'A'] = (long)msg.msgSender;
             init_pos.x = i % (width + 2) - 1;
             init_pos.y = i / (width + 2) - 1;
             init_pos.status = REG_OK;
-            printf("%c registration ok\n", msg.client_id);
+            printf("%c registration ok\n", msg.clientId);
             break;
           }
         }
@@ -158,22 +159,22 @@ int main(int argc, char* argv[]) {
       }
     }
 
-      else if (isOnBoard(msg.client_id, clients) && msg.command == 'T') {
+      else if (isOnBoard(msg.clientId, clients) && msg.command == 'T') {
       for (int i = 0; i < size; ++i) {
-        if (grid[i] == msg.client_id) {
-          printf("%c is ded by signiori\n", msg.client_id);
-          kill(clients[msg.client_id - 'A'], SIGTERM);
-          clients[msg.client_id - 'A'] = 0;
+        if (grid[i] == msg.clientId) {
+          printf("%c is ded by signiori\n", msg.clientId);
+          kill(clients[msg.clientId - 'A'], SIGTERM);
+          clients[msg.clientId - 'A'] = 0;
           grid[i] = ' ';
         }
       }
     }
 
-      else if (isOnBoard(msg.client_id, clients)) {
+      else if (isOnBoard(msg.clientId, clients)) {
       printf("itsy bitsy griddy \n");
-      if (move(msg.client_id, msg.command, grid, width, size) == 0) {
+      if (move(msg.clientId, msg.command, grid, width, size) == 0) {
         for (int i = 0; i < size; ++i) {
-          if (grid[i] == msg.client_id) {
+          if (grid[i] == msg.clientId) {
             printf("Women driving...! (jk...) %c and %c, U ded!\n", grid[i],
                    grid[i + dirCheck(msg.command, width)]);
             kill(clients[grid[i] - 'A'], SIGTERM);
@@ -186,10 +187,10 @@ int main(int argc, char* argv[]) {
           }
         }
 
-      } else if (move(msg.client_id, msg.command, grid, width, size) == 2) {
+      } else if (move(msg.clientId, msg.command, grid, width, size) == 2) {
         for (int i = 0; i < size; ++i) {
-          if (grid[i] == msg.client_id) {
-            printf("%c You fell off of the world...!\n", msg.client_id);
+          if (grid[i] == msg.clientId) {
+            printf("%c You fell off of the world...!\n", msg.clientId);
             kill(clients[grid[i] - 'A'], SIGTERM);
             clients[grid[i] - 'A'] = 0;
             grid[i] = ' ';
@@ -198,11 +199,11 @@ int main(int argc, char* argv[]) {
         }
       }
 
-      else if (move(msg.client_id, msg.command, grid, width, size) == 1) {
+      else if (move(msg.clientId, msg.command, grid, width, size) == 1) {
         for (int i = 0; i < size; ++i) {
-          if (grid[i] == msg.client_id) {
-            printf("%c walky walky to %c \n", msg.client_id, msg.command);
-            grid[i + dirCheck(msg.command, width)] = msg.client_id;
+          if (grid[i] == msg.clientId) {
+            printf("%c walky walky to %c \n", msg.clientId, msg.command);
+            grid[i + dirCheck(msg.command, width)] = msg.clientId;
             grid[i] = ' ';
             break;
           }
@@ -270,7 +271,7 @@ void sigHandler() {
 }
 
 
-bool isOnBboard(char id, long clients[]) {
+bool isOnBoard(char id, long clients[]) {
   if (clients[id - 'A'] != 0) {
     return true;
   }

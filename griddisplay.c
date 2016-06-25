@@ -17,7 +17,7 @@ void sigIntHandler(int sig);
 int main(int argc, char* argv[]) {
   (void)signal(SIGINT, sigIntHandler);
   char incoming[PIPE_BUF] = "";
-  char c;
+  //char c;
     
   prog_name = (char*)malloc((strlen(argv[0]) + 1) * sizeof(char));
   strcpy(prog_name, argv[0]);
